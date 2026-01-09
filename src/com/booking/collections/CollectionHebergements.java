@@ -2,9 +2,8 @@ package com.booking.collections;
 
 import com.booking.models.Hebergement;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CollectionHebergements {
     private List<Hebergement> hebergements;
@@ -13,60 +12,54 @@ public class CollectionHebergements {
         this.hebergements = new ArrayList<>();
     }
 
-    public void ajouter(Hebergement h) {
-        hebergements.add(h);
+    public void ajouter(Hebergement hebergement) {
+        hebergements.add(hebergement);
     }
 
-    public void supprimer(Hebergement h) {
-        hebergements.remove(h);
+    public boolean supprimer(int id) {
+        return hebergements.removeIf(h -> h.getId() == id);
     }
 
-    public List<Hebergement> getHebergements() {
-        return hebergements;
+    public Hebergement rechercherParId(int id) {
+        return hebergements.stream()
+                .filter(h -> h.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
-    public List<Hebergement> rechercherParType(String type) {
-        List<Hebergement> resultats = new ArrayList<>();
-        for (Hebergement h : hebergements) {
-            if (h.getType().equalsIgnoreCase(type)) {
-                resultats.add(h);
-            }
-        }
-        return resultats;
+    public List<Hebergement> rechercherParVille(String ville) {
+        return hebergements.stream()
+                .filter(h -> h.getAdresse().toLowerCase().contains(ville.toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     public List<Hebergement> rechercherParPrixMax(double prixMax) {
-        List<Hebergement> resultats = new ArrayList<>();
-        for (Hebergement h : hebergements) {
-            if (h.getPrixParNuit() <= prixMax) {
-                resultats.add(h);
-            }
-        }
-        return resultats;
+        return hebergements.stream()
+                .filter(h -> h.getPrixParNuit() <= prixMax)
+                .collect(Collectors.toList());
     }
 
-    public void trierParPrix() {
-        Collections.sort(hebergements, new Comparator<Hebergement>() {
-            @Override
-            public int compare(Hebergement h1, Hebergement h2) {
-                return Double.compare(h1.getPrixParNuit(), h2.getPrixParNuit());
-            }
-        });
-    }
-
-    public void trierParNote() {
-        Collections.sort(hebergements, new Comparator<Hebergement>() {
-            @Override
-            public int compare(Hebergement h1, Hebergement h2) {
-                return Double.compare(h2.getNoteMoyenne(), h1.getNoteMoyenne());
-            }
-        });
+    public List<Hebergement> rechercherParCapacite(int capaciteMin) {
+        return hebergements.stream()
+                .filter(h -> h.getCapacite() >= capaciteMin)
+                .collect(Collectors.toList());
     }
 
     public void afficherTous() {
+        if (hebergements.isEmpty()) {
+            System.out.println("📭 Aucun hébergement disponible");
+            return;
+        }
+
+        System.out.println("\n🏠 Liste des hébergements (" + hebergements.size() + ")");
+        System.out.println("═".repeat(60));
         for (Hebergement h : hebergements) {
             h.afficherDetails();
             System.out.println();
         }
+    }
+
+    public List<Hebergement> getTous() {
+        return new ArrayList<>(hebergements);
     }
 }

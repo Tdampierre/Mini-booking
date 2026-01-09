@@ -1,61 +1,32 @@
 package com.booking.models;
 
-import java.util.Date;
-import java.util.List;
+import com.booking.collections.CollectionHebergements;
 
 public class Administrateur extends Personne {
-    private String motDePasse;
-    private boolean estConnecte;
-
     public Administrateur(String nom, String prenom, String email, String motDePasse) {
-        super(nom, prenom, email);
-        this.motDePasse = motDePasse;
-        this.estConnecte = false;
+        super(nom, prenom, email, motDePasse);
     }
 
-    public boolean seConnecter(String mdp) {
-        if (mdp.equals(this.motDePasse)) {
-            estConnecte = true;
-            System.out.println("Connexion réussie !");
-            return true;
+    public void ajouterHebergement(CollectionHebergements collection, Hebergement hebergement) {
+        collection.ajouter(hebergement);
+        System.out.println("✅ Hébergement ajouté: " + hebergement.getNom());
+    }
+
+    public void supprimerHebergement(CollectionHebergements collection, int id) {
+        if (collection.supprimer(id)) {
+            System.out.println("✅ Hébergement supprimé");
+        } else {
+            System.out.println("❌ Hébergement introuvable");
         }
-        System.out.println("Mot de passe incorrect !");
-        return false;
     }
 
-    public void seDeconnecter() {
-        estConnecte = false;
-        System.out.println("Déconnexion effectuée.");
+    public void modifierPrix(Hebergement hebergement, double nouveauPrix) {
+        hebergement.setPrixParNuit(nouveauPrix);
+        System.out.printf("✅ Prix modifié: %.2f€/nuit%n", nouveauPrix);
     }
 
-    public boolean estConnecte() {
-        return estConnecte;
-    }
-
-    public double calculerReduction(Client client) {
-        int nbRes = client.getNombreReservations();
-        if (nbRes >= 10) return 0.15;
-        if (nbRes >= 5) return 0.10;
-        if (nbRes >= 3) return 0.05;
-        return 0.0;
-    }
-
-    public Reservation creerReservation(Client client, Hebergement h, Date debut, Date fin) {
-        if (!estConnecte) {
-            System.out.println("Vous devez être connecté !");
-            return null;
-        }
-        
-        Reservation res = new Reservation(client, h, debut, fin);
-        double reduction = calculerReduction(client);
-        
-        if (reduction > 0) {
-            res.appliquerReduction(reduction);
-            System.out.println("Réduction de " + (int)(reduction*100) + "% appliquée !");
-        }
-        
-        client.ajouterReservation(res);
-        System.out.println("Réservation " + res.getId() + " créée !");
-        return res;
+    @Override
+    public void afficherRole() {
+        System.out.println("👨‍💼 Rôle: Administrateur");
     }
 }

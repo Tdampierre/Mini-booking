@@ -1,32 +1,27 @@
 package com.booking.models;
 
 public class Villa extends Hebergement {
-    private boolean piscine;
-    private int surfaceTerrain;
+    private boolean avecPiscine;
+    private double superficieTerrain;
 
-    public Villa(String nom, String adresse, int capacite, double prixParNuit, boolean piscine, int surfaceTerrain) {
-        super(nom, adresse, capacite, prixParNuit);
-        this.piscine = piscine;
-        this.surfaceTerrain = surfaceTerrain;
+    public Villa(String nom, String adresse, int capacite, double prixParNuit,
+                 String description, boolean avecPiscine, double superficieTerrain) {
+        super(nom, adresse, capacite, prixParNuit, description);
+        this.avecPiscine = avecPiscine;
+        this.superficieTerrain = superficieTerrain;
     }
 
-    public boolean hasPiscine() { return piscine; }
-    public int getSurfaceTerrain() { return surfaceTerrain; }
-
-    @Override
-    public String getType() {
-        return "Villa";
-    }
+    public boolean isAvecPiscine() { return avecPiscine; }
+    public double getSuperficieTerrain() { return superficieTerrain; }
 
     @Override
     public void afficherDetails() {
-        System.out.println("=== VILLA ===");
-        System.out.println("Nom: " + nom);
-        System.out.println("Adresse: " + adresse);
-        System.out.println("Piscine: " + (piscine ? "Oui" : "Non"));
-        System.out.println("Terrain: " + surfaceTerrain + " m²");
-        System.out.println("Capacité: " + capacite + " personnes");
-        System.out.println("Prix: " + prixParNuit + "€/nuit");
-        System.out.println("Note: " + String.format("%.1f", getNoteMoyenne()) + "/5");
+        System.out.println("🏡 Villa: " + nom);
+        System.out.println("   Adresse: " + adresse);
+        System.out.println("   Piscine: " + (avecPiscine ? "Oui" : "Non"));
+        System.out.printf("   Terrain: %.0f m²%n", superficieTerrain);
+        System.out.println("   Capacité: " + capacite + " personnes");
+        System.out.printf("   Prix: %.2f€/nuit%n", prixParNuit);
+        System.out.printf("   Note moyenne: %.1f/5%n", calculerMoyenneNotes());
     }
 }
