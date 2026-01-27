@@ -449,7 +449,7 @@ public class MainBooking {
         System.out.println("🔍 Hébergements ≤ 200€ : " + 
             collection.rechercherParPrixMax(200.0).size());
         System.out.println("🔍 Hébergements capacité ≥ 4 : " + 
-            ollection.rechercherParCapacite(4).size());
+            Collection.rechercherParCapacite(4).size());
 
         System.out.println("\n✅ Démonstration des collections terminée\n");
     }
