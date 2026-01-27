@@ -16,20 +16,74 @@ public class MainBooking {
     public static void main(String[] args) {
         afficherBanniere();
         initialiserDonnees();
-        
-        // Exécution des 3 scénarios obligatoires
-        scenario1_NouveauClient();
-        scenario2_AncienClient();
-        scenario3_Administrateur();
-        
-        // Démonstration du polymorphisme
-        demonstrationPolymorphisme();
-        
-        // Démonstration des collections
-        demonstrationCollections();
+
+        afficherMenuPrincipal();
 
         scanner.close();
         System.out.println("\n✅ Programme terminé avec succès !");
+    }
+
+    /**
+     * Affiche le menu principal et permet à l'utilisateur de choisir quoi exécuter.
+     */
+    private static void afficherMenuPrincipal() {
+        boolean quitter = false;
+
+        while (!quitter) {
+            System.out.println("═".repeat(60));
+            System.out.println("📋 MENU PRINCIPAL");
+            System.out.println("═".repeat(60));
+            System.out.println("1️⃣  Mode client interactif");
+            System.out.println("2️⃣  Mode administrateur interactif");
+            System.out.println("3️⃣  Scénario 1 (démo auto : nouveau client)");
+            System.out.println("4️⃣  Scénario 2 (démo auto : ancien client)");
+            System.out.println("5️⃣  Scénario 3 (démo auto : administrateur)");
+            System.out.println("6️⃣  Démonstration du polymorphisme");
+            System.out.println("7️⃣  Démonstration des collections");
+            System.out.println("0️⃣  Quitter");
+            System.out.print("\n👉 Votre choix : ");
+
+            String saisie = scanner.nextLine();
+            int choix;
+
+            try {
+                choix = Integer.parseInt(saisie);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Veuillez entrer un numéro valide.\n");
+                continue;
+            }
+
+            System.out.println();
+
+            switch (choix) {
+                case 1:
+                    menuClientInteractif();
+                    break;
+                case 2:
+                    menuAdminInteractif();
+                    break;
+                case 3:
+                    scenario1_NouveauClient();
+                    break;
+                case 4:
+                    scenario2_AncienClient();
+                    break;
+                case 5:
+                    scenario3_Administrateur();
+                    break;
+                case 6:
+                    demonstrationPolymorphisme();
+                    break;
+                case 7:
+                    demonstrationCollections();
+                    break;
+                case 0:
+                    quitter = true;
+                    break;
+                default:
+                    System.out.println("❌ Choix inconnu, merci de réessayer.\n");
+            }
+        }
     }
 
     private static void afficherBanniere() {
@@ -452,5 +506,338 @@ public class MainBooking {
             collection.rechercherParCapacite(4).size());
 
         System.out.println("\n✅ Démonstration des collections terminée\n");
+    }
+
+    /**
+     * Mode client interactif : inscription, connexion, recherche et réservation.
+     */
+    private static void menuClientInteractif() {
+        System.out.println("═".repeat(60));
+        System.out.println("👤 MODE CLIENT (INTERACTIF)");
+        System.out.println("═".repeat(60));
+
+        // Inscription
+        System.out.print("Nom : ");
+        String nom = scanner.nextLine();
+
+        System.out.print("Prénom : ");
+        String prenom = scanner.nextLine();
+
+        System.out.print("Email : ");
+        String email = scanner.nextLine();
+
+        System.out.print("Mot de passe : ");
+        String motDePasse = scanner.nextLine();
+
+        NouveauClient client = new NouveauClient(nom, prenom, email, motDePasse);
+        authService.ajouterUtilisateur(client);
+
+        // Connexion
+        System.out.println("\n🔐 Connexion");
+        System.out.print("Email : ");
+        String emailConnexion = scanner.nextLine();
+        System.out.print("Mot de passe : ");
+        String mdpConnexion = scanner.nextLine();
+
+        Personne utilisateur = authService.seConnecter(emailConnexion, mdpConnexion);
+        if (utilisateur == null || !(utilisateur instanceof Client)) {
+            System.out.println("❌ Impossible de se connecter en tant que client.\n");
+            return;
+        }
+
+        Client clientConnecte = (Client) utilisateur;
+
+        boolean retour = false;
+        while (!retour) {
+            System.out.println("\n📋 MENU CLIENT");
+            System.out.println("1️⃣  Rechercher un hébergement par ville");
+            System.out.println("2️⃣  Afficher l'historique des réservations");
+            System.out.println("0️⃣  Retour au menu principal");
+            System.out.print("\n👉 Votre choix : ");
+
+            String saisie = scanner.nextLine();
+            int choix;
+            try {
+                choix = Integer.parseInt(saisie);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Veuillez entrer un numéro valide.");
+                continue;
+            }
+
+            switch (choix) {
+                case 1:
+                    effectuerRechercheEtReservation(clientConnecte);
+                    break;
+                case 2:
+                    clientConnecte.afficherHistorique();
+                    break;
+                case 0:
+                    retour = true;
+                    break;
+                default:
+                    System.out.println("❌ Choix inconnu.");
+            }
+        }
+    }
+
+    /**
+     * Recherche d'hébergements et création éventuelle d'une réservation.
+     */
+    private static void effectuerRechercheEtReservation(Client clientConnecte) {
+        System.out.print("\n🔍 Ville recherchée : ");
+        String ville = scanner.nextLine();
+
+        List<Hebergement> resultats = collection.rechercherParVille(ville);
+        if (resultats.isEmpty()) {
+            System.out.println("📭 Aucun hébergement trouvé pour cette ville.");
+            return;
+        }
+
+        System.out.println("\n🏠 Hébergements trouvés :");
+        for (int i = 0; i < resultats.size(); i++) {
+            Hebergement h = resultats.get(i);
+            System.out.printf("%d) [ID %d] %s - %.2f€/nuit, capacité %d%n",
+                    i + 1, h.getId(), h.getNom(), h.getPrixParNuit(), h.getCapacite());
+        }
+
+        System.out.print("\nSouhaitez-vous faire une réservation ? (o/n) : ");
+        String reponse = scanner.nextLine().trim().toLowerCase();
+        if (!reponse.equals("o") && !reponse.equals("oui")) {
+            return;
+        }
+
+        System.out.print("Numéro de l'hébergement choisi : ");
+        String choixStr = scanner.nextLine();
+        int indexChoix;
+        try {
+            indexChoix = Integer.parseInt(choixStr) - 1;
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Numéro invalide.");
+            return;
+        }
+
+        if (indexChoix < 0 || indexChoix >= resultats.size()) {
+            System.out.println("❌ Numéro hors limite.");
+            return;
+        }
+
+        Hebergement choix = resultats.get(indexChoix);
+
+        System.out.print("Nombre de personnes : ");
+        int nbPersonnes;
+        try {
+            nbPersonnes = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        System.out.print("Nombre de nuits : ");
+        int nbNuits;
+        try {
+            nbNuits = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        System.out.print("Dans combien de jours commence le séjour ? ");
+        int joursAvantDebut;
+        try {
+            joursAvantDebut = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, joursAvantDebut);
+        Date debut = cal.getTime();
+        cal.add(Calendar.DAY_OF_MONTH, nbNuits);
+        Date fin = cal.getTime();
+
+        Reservation reservation = clientConnecte.reserver(choix, debut, fin, nbPersonnes);
+        if (reservation != null) {
+            System.out.println("\n✅ Réservation créée avec succès !");
+            reservation.afficherDetails();
+        }
+    }
+
+    /**
+     * Mode administrateur interactif : connexion et gestion des hébergements.
+     */
+    private static void menuAdminInteractif() {
+        System.out.println("═".repeat(60));
+        System.out.println("👨‍💼 MODE ADMINISTRATEUR (INTERACTIF)");
+        System.out.println("═".repeat(60));
+
+        // Création d'un compte admin par défaut
+        Administrateur admin = new Administrateur(
+                "Admin",
+                "Système",
+                "admin@booking.com",
+                "admin2024"
+        );
+        authService.ajouterUtilisateur(admin);
+        System.out.println("ℹ️ Compte admin par défaut : admin@booking.com / admin2024");
+
+        // Connexion
+        System.out.println("\n🔐 Connexion administrateur");
+        System.out.print("Email : ");
+        String email = scanner.nextLine();
+        System.out.print("Mot de passe : ");
+        String mdp = scanner.nextLine();
+
+        Personne utilisateur = authService.seConnecter(email, mdp);
+        if (utilisateur == null || !(utilisateur instanceof Administrateur)) {
+            System.out.println("❌ Connexion administrateur échouée.\n");
+            return;
+        }
+
+        Administrateur adminConnecte = (Administrateur) utilisateur;
+
+        boolean retour = false;
+        while (!retour) {
+            System.out.println("\n📋 MENU ADMINISTRATEUR");
+            System.out.println("1️⃣  Lister tous les hébergements");
+            System.out.println("2️⃣  Ajouter un nouvel hôtel simple");
+            System.out.println("3️⃣  Modifier le prix d'un hébergement par ID");
+            System.out.println("4️⃣  Supprimer un hébergement par ID");
+            System.out.println("5️⃣  Afficher les statistiques");
+            System.out.println("0️⃣  Retour au menu principal");
+            System.out.print("\n👉 Votre choix : ");
+
+            String saisie = scanner.nextLine();
+            int choix;
+            try {
+                choix = Integer.parseInt(saisie);
+            } catch (NumberFormatException e) {
+                System.out.println("❌ Veuillez entrer un numéro valide.");
+                continue;
+            }
+
+            switch (choix) {
+                case 1:
+                    collection.afficherTous();
+                    break;
+                case 2:
+                    ajouterHotelSimple(adminConnecte);
+                    break;
+                case 3:
+                    modifierPrixParId(adminConnecte);
+                    break;
+                case 4:
+                    supprimerHebergementParId(adminConnecte);
+                    break;
+                case 5:
+                    afficherStatistiques();
+                    break;
+                case 0:
+                    retour = true;
+                    break;
+                default:
+                    System.out.println("❌ Choix inconnu.");
+            }
+        }
+    }
+
+    private static void ajouterHotelSimple(Administrateur adminConnecte) {
+        System.out.println("\n🏨 Ajout d'un nouvel hôtel");
+        System.out.print("Nom de l'hôtel : ");
+        String nom = scanner.nextLine();
+        System.out.print("Ville : ");
+        String ville = scanner.nextLine();
+        System.out.print("Capacité (nombre de personnes) : ");
+        int capacite;
+        try {
+            capacite = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+        System.out.print("Prix par nuit : ");
+        double prix;
+        try {
+            prix = Double.parseDouble(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        String adresse = "Adresse inconnue, " + ville;
+        Hotel hotel = new Hotel(
+                nom,
+                adresse,
+                capacite,
+                prix,
+                "Hôtel ajouté par l'administrateur",
+                3
+        );
+
+        // Disponibilité par défaut : 3 mois à partir d'aujourd'hui
+        Calendar cal = Calendar.getInstance();
+        Date debut = cal.getTime();
+        cal.add(Calendar.MONTH, 3);
+        Date fin = cal.getTime();
+        hotel.ajouterPeriodeDisponible(debut, fin);
+
+        adminConnecte.ajouterHebergement(collection, hotel);
+    }
+
+    private static void modifierPrixParId(Administrateur adminConnecte) {
+        System.out.print("\nID de l'hébergement : ");
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        Hebergement h = collection.rechercherParId(id);
+        if (h == null) {
+            System.out.println("❌ Hébergement introuvable.");
+            return;
+        }
+
+        System.out.printf("Hébergement sélectionné : %s (%.2f€/nuit)%n", h.getNom(), h.getPrixParNuit());
+        System.out.print("Nouveau prix : ");
+        double prix;
+        try {
+            prix = Double.parseDouble(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        adminConnecte.modifierPrix(h, prix);
+    }
+
+    private static void supprimerHebergementParId(Administrateur adminConnecte) {
+        System.out.print("\nID de l'hébergement à supprimer : ");
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("❌ Valeur invalide.");
+            return;
+        }
+
+        adminConnecte.supprimerHebergement(collection, id);
+    }
+
+    private static void afficherStatistiques() {
+        System.out.println("\n📊 Statistiques du système");
+        System.out.println("─".repeat(40));
+        System.out.println("📦 Nombre d'hébergements : " + collection.getTous().size());
+        System.out.println("👥 Nombre d'utilisateurs : " + authService.getTousUtilisateurs().size());
+
+        int totalReservations = 0;
+        for (Personne p : authService.getTousUtilisateurs()) {
+            if (p instanceof Client) {
+                totalReservations += ((Client) p).getReservations().size();
+            }
+        }
+        System.out.println("📅 Nombre total de réservations : " + totalReservations);
     }
 }
